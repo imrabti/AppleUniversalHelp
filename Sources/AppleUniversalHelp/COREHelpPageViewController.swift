@@ -77,7 +77,7 @@ class COREHelpPageViewController: UIViewController, WKNavigationDelegate {
 			decisionHandler(.allow)
 			
 			if url.absoluteString.hasSuffix("html") {
-                title = webView.title ?? (url.lastPathComponent as NSString).deletingPathExtension
+                title = (url.lastPathComponent as NSString).deletingPathExtension
 				view.window?.windowScene?.title = title
 				NotificationCenter.default.post(name: .viewerDestinationChanged, object: url)
 			}
@@ -85,6 +85,11 @@ class COREHelpPageViewController: UIViewController, WKNavigationDelegate {
 	}
 	
 	func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        if let htmlTitle = webView.title, !htmlTitle.isEmpty {
+            title = htmlTitle
+            view.window?.windowScene?.title = title
+        }
+        
 		NotificationCenter.default.post(name: .viewerDestinationChanged, object: nil)
 	}
 }
