@@ -84,12 +84,7 @@ class COREHelpPageViewController: UIViewController, WKNavigationDelegate {
 		}
 	}
 	
-	func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        if let htmlTitle = webView.title, !htmlTitle.isEmpty {
-            title = htmlTitle
-            view.window?.windowScene?.title = title
-        }
-        
+	func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {        
 		NotificationCenter.default.post(name: .viewerDestinationChanged, object: nil)
 	}
 }
