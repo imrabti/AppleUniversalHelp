@@ -25,9 +25,9 @@ public class HelpPage: HelpItem {
 	var summary = ""
 	var tags:[String] = []
 	
-    public init(url: URL, title: String?) {
+    public init(url: URL) {
 		self.url = url
-        self.title = title ?? (url.lastPathComponent as NSString).deletingPathExtension
+        self.title = NSLocalizedString((url.lastPathComponent as NSString).deletingPathExtension, comment: "")
 		
 		let metadataURL = url.appendingPathExtension("json")
 		guard let metadataPath = metadataURL.path.removingPercentEncoding else { return }
@@ -47,18 +47,13 @@ public class HelpPage: HelpItem {
 	}
 }
 
-struct IndexItem: Codable {
-    let url: String
-    let title: String?
-}
-
 public class HelpSection: HelpItem {
 	
 	var url:URL
 	var title = "Section"
 	var pages:[HelpPage]
 	
-    public init(url:URL, title: String?) {
+    public init(url: URL) {
 		self.url = url
 		
 		var _pages:[HelpPage] = []
@@ -66,20 +61,20 @@ public class HelpSection: HelpItem {
 		let nspath = url.path as NSString
 		
 		let data = try! Data(contentsOf: url.appendingPathComponent("index.json"))
-		let indices = try! JSONDecoder().decode([IndexItem].self, from: data)
+		let indices = try! JSONDecoder().decode([String].self, from: data)
 
 		for item in indices {
-            let pagePath = nspath.appendingPathComponent(item.url)
+            let pagePath = nspath.appendingPathComponent(item)
 			
 			if FileManager.default.fileExists(atPath: pagePath) {
-                _pages.append(HelpPage(url:URL(fileURLWithPath: pagePath), title: item.title))
+                _pages.append(HelpPage(url:URL(fileURLWithPath: pagePath)))
 			}
 			else {
 				NSLog("[HELP] Missing page \(pagePath)")
 			}
 		}
 		
-        self.title = title ?? url.lastPathComponent
+        title = NSLocalizedString(url.lastPathComponent, comment: "")
 		pages = _pages
 	}
 	
@@ -97,15 +92,15 @@ public struct HelpBundle {
 		var _rootItems:[HelpItem] = []
 		
 		let data = try! Data(contentsOf: url.appendingPathComponent("index.json"))
-		let indices = try! JSONDecoder().decode([IndexItem].self, from: data)
+		let indices = try! JSONDecoder().decode([String].self, from: data)
 		
 		let nspath = url.path as NSString
 		for item in indices {
-            let itemPath = nspath.appendingPathComponent(item.url)
+            let itemPath = nspath.appendingPathComponent(item)
 
-            if item.url.hasSuffix("html") {
+            if item.hasSuffix("html") {
 				if FileManager.default.fileExists(atPath: itemPath) {
-                    _rootItems.append(HelpPage(url:URL(fileURLWithPath: itemPath), title: item.title))
+                    _rootItems.append(HelpPage(url:URL(fileURLWithPath: itemPath)))
 				}
 				else {
 					NSLog("[HELP] Missing item \(itemPath)")
@@ -116,7 +111,7 @@ public struct HelpBundle {
 				FileManager.default.fileExists(atPath: itemPath, isDirectory: &isDirectory)
 				
 				if isDirectory.boolValue == true {
-                    _rootItems.append(HelpSection(url:URL(fileURLWithPath: itemPath), title: item.title))
+                    _rootItems.append(HelpSection(url:URL(fileURLWithPath: itemPath)))
 				}
 			}
 		}
