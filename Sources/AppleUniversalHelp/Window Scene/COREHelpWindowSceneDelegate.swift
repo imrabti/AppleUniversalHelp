@@ -15,12 +15,15 @@ open class COREHelpWindowSceneDelegate: UIResponder, UIWindowSceneDelegate {
 	
 	open func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
 		guard let scene = scene as? UIWindowScene else { return }
-		
 		window = UIWindow(windowScene: scene)
-		
 		guard let window = window else { return }
 		
-		helpRootController.helpBundle = HelpBundle(url:Bundle.main.url(forResource: "Help", withExtension: "help")!)
+        if let langageCode = Locale.current.languageCode,
+           let helpResource = Bundle.main.url(forResource: "Help_\(langageCode)", withExtension: "help") {
+            helpRootController.helpBundle = HelpBundle(url: helpResource)
+        } else {
+            helpRootController.helpBundle = HelpBundle(url: Bundle.main.url(forResource: "Help", withExtension: "help")!)
+        }
 		
 		window.tintColor = .systemPurple
 		
