@@ -77,7 +77,7 @@ class COREHelpPageViewController: UIViewController, WKNavigationDelegate {
 			decisionHandler(.allow)
 			
 			if url.absoluteString.hasSuffix("html") {
-				title = (url.lastPathComponent as NSString).deletingPathExtension
+                title = webView.title ?? (url.lastPathComponent as NSString).deletingPathExtension
 				view.window?.windowScene?.title = title
 				NotificationCenter.default.post(name: .viewerDestinationChanged, object: url)
 			}
