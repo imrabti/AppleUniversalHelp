@@ -249,6 +249,7 @@ class COREHelpTableOfContentsViewController: UICollectionViewController, UISearc
         
         findAndSelectItemForDestinationChange(initialHelpPage.url)
         helpController?.navigate(to: initialHelpPage)
+        helpController?.helpPage = nil
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {
