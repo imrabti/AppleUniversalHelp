@@ -183,7 +183,7 @@ class COREHelpTableOfContentsViewController: UICollectionViewController, UISearc
 		if shouldExpand == true {
 			
 			
-			guard let hiddenItem = items.filter({ return $0.page?.url == destination }).first else { return }
+            guard let hiddenItem = items.filter({ return $0.page?.url.pathComponents == destination?.pathComponents }).first else { return }
 			
 			guard let parent = hiddenItem.parent else { return }
 			currentSnapshot.expand([parent])
