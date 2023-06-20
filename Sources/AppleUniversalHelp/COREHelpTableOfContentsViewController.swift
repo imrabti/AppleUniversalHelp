@@ -247,7 +247,7 @@ class COREHelpTableOfContentsViewController: UICollectionViewController, UISearc
 	
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
-		collectionView.selectItem(at: cachedIndexPath, animated: false, scrollPosition: [])
+		//collectionView.selectItem(at: cachedIndexPath, animated: false, scrollPosition: [])
 	}
 	
 	// MARK: -
