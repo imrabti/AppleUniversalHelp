@@ -241,7 +241,7 @@ class COREHelpTableOfContentsViewController: UICollectionViewController, UISearc
 		super.didMove(toParent: parent)
 		
 		let indexPath = IndexPath(item: 0, section: 0)
-		collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
+//		collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
 //		actuateItem(at: indexPath)
 	}
 	
