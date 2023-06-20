@@ -248,14 +248,11 @@ class COREHelpTableOfContentsViewController: UICollectionViewController, UISearc
         }
         
         findAndSelectItemForDestinationChange(initialHelpPage.url)
-        
-        if let indexPath = collectionView.indexPathsForSelectedItems?.first {
-            actuateItem(at: indexPath)
-        }
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
+        guard helpController?.helpPage == nil else { return }
 		collectionView.selectItem(at: cachedIndexPath, animated: false, scrollPosition: [])
 	}
 	
