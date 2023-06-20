@@ -240,9 +240,18 @@ class COREHelpTableOfContentsViewController: UICollectionViewController, UISearc
 	override func didMove(toParent parent: UIViewController?) {
 		super.didMove(toParent: parent)
 		
-		let indexPath = IndexPath(item: 0, section: 0)
-		collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
-		actuateItem(at: indexPath)
+        guard let initialHelpPage = helpController?.helpPage else {
+            let indexPath = IndexPath(item: 0, section: 0)
+            collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
+            actuateItem(at: indexPath)
+            return
+        }
+        
+        findAndSelectItemForDestinationChange(initialHelpPage.url)
+        
+        if let indexPath = collectionView.indexPathsForSelectedItems?.first {
+            actuateItem(at: indexPath)
+        }
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {

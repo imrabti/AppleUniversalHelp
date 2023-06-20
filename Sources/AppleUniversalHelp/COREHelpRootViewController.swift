@@ -45,6 +45,8 @@ open class COREHelpRootViewController: UIViewController, UINavigationControllerD
 			splitPageViewController.baseURL = helpBundle?.url
 		}
 	}
+    
+    public var helpPage: HelpPage?
 	
 	var searchVisible = false {
 		didSet {
