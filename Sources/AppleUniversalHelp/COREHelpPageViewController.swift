@@ -76,7 +76,7 @@ class COREHelpPageViewController: UIViewController, WKNavigationDelegate {
 		else {
 			decisionHandler(.allow)
 			
-			if url.absoluteString.hasSuffix("html") {
+            if url.absoluteString.hasPrefix("html") || url.lastPathComponent.hasSuffix("html") {
                 title =  NSLocalizedString((url.lastPathComponent as NSString).deletingPathExtension, comment: "")
 				view.window?.windowScene?.title = title
 				NotificationCenter.default.post(name: .viewerDestinationChanged, object: url)
