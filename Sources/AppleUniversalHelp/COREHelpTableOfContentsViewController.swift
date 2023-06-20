@@ -167,7 +167,7 @@ class COREHelpTableOfContentsViewController: UICollectionViewController, UISearc
 			
 			var i = 0
 			for item in expandedItems {
-				if item.page?.url == destination {
+				if item.page?.url.pathComponents == destination?.pathComponents {
 					shouldExpand = false
 					break
 				}
