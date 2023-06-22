@@ -256,7 +256,7 @@ class COREHelpTableOfContentsViewController: UICollectionViewController, UISearc
 	
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
-        guard helpController?.helpPage == nil else { return }
+        guard helpController?.helpPage == nil, !isCompact else { return }
 		collectionView.selectItem(at: cachedIndexPath, animated: false, scrollPosition: [])
 	}
 	
