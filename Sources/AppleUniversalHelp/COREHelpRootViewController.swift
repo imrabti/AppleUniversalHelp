@@ -97,11 +97,13 @@ open class COREHelpRootViewController: UIViewController, UINavigationControllerD
 		backItem = UIBarButtonItem(image:UIImage(systemName: "chevron.backward"), style:.plain, target: self, action: #selector(goBack(_:)))
 		forwardItem = UIBarButtonItem(image:UIImage(systemName: "chevron.forward"), style:.plain, target: self, action: #selector(goForward(_:)))
 		
-		
 		splitTOCViewController.helpController = self
 		compactTOCViewController.helpController = self
 		splitSearchViewController.helpController = self
 		compactSearchViewController.helpController = self
+        
+        compactTOCViewController.isCompact = true
+        splitTOCViewController.isCompact = false
 		
 		rootSplitViewController.viewControllers = [splitTOCViewController, splitPageViewController]
 		

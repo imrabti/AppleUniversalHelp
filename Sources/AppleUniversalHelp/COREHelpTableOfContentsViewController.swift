@@ -17,6 +17,7 @@ class COREHelpTableOfContentsViewController: UICollectionViewController, UISearc
 	var lastTypeSelectTimestamp = TimeInterval.zero
 	var focusedIndexPath:IndexPath? = nil
 	var cachedIndexPath = IndexPath(item:0, section:0)
+    var isCompact: Bool = true
 	
 	var helpController:COREHelpRootViewController?
 	
@@ -241,6 +242,7 @@ class COREHelpTableOfContentsViewController: UICollectionViewController, UISearc
 		super.didMove(toParent: parent)
 		
         guard let initialHelpPage = helpController?.helpPage else {
+            guard !isCompact else { return }
             let indexPath = IndexPath(item: 0, section: 0)
             collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
             actuateItem(at: indexPath)
