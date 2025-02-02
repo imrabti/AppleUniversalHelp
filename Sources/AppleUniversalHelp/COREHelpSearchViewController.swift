@@ -157,7 +157,10 @@ class COREHelpSearchViewController: UICollectionViewController {
 	
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
-		collectionView.selectItem(at: cachedIndexPath, animated: false, scrollPosition: [])
+        
+        if dataSource.itemIdentifier(for: cachedIndexPath) != nil {
+            collectionView.selectItem(at: cachedIndexPath, animated: false, scrollPosition: [])
+        }
 	}
 	
 	// MARK: -
