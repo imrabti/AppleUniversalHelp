@@ -152,7 +152,9 @@ class COREHelpSearchViewController: UICollectionViewController {
 		super.didMove(toParent: parent)
 		
 		let indexPath = IndexPath(item: 0, section: 0)
-		collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
+        if dataSource.itemIdentifier(for: indexPath) != nil {
+            collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
+        }
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {
