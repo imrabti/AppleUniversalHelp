@@ -1,29 +1,22 @@
 //
 //  COREHelpSymbolSchemeHandler.swift
-//  
+//
 //
 //  Created by Steven Troughton-Smith on 03/01/2023.
 //
 
+import Foundation
 import WebKit
-import AppleUniversalCore
 
-class COREHelpSymbolSchemeHandler: NSObject, WKURLSchemeHandler {
-	func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
-		
-		if let symbolName = urlSchemeTask.request.url?.host {
-			
-			let symbol = UIImage(systemName: symbolName, withConfiguration: UIImage.SymbolConfiguration(pointSize: UIFloat(32)))?.withTintColor(.systemBlue, renderingMode: .alwaysTemplate)
-			
-			guard let data = symbol?.pngData() else { return }
-			urlSchemeTask.didReceive(URLResponse(url: urlSchemeTask.request.url!, mimeType: "image/png", expectedContentLength: data.count, textEncodingName: nil))
-			
-			urlSchemeTask.didReceive(data)
-			urlSchemeTask.didFinish()
+/// Serves SF Symbols as PNG images, e.g. `<img src="symbol://star.fill">`.
+struct COREHelpSymbolSchemeHandler: URLSchemeHandler {
+	func reply(for request: URLRequest) -> AsyncThrowingStream<URLSchemeTaskResult, any Error> {
+		guard let url = request.url, let symbolName = url.host else {
+			return .failure(URLError(.badURL))
 		}
-	}
-	
-	func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {
-		
+
+		return .rendering(url: url) {
+			COREHelpImageRenderer.symbolPNGData(named: symbolName)
+		}
 	}
 }
