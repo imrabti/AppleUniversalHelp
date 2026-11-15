@@ -51,9 +51,24 @@ struct COREHelpPageView: View {
 				}
 
 				ToolbarItem(placement: .primaryAction) {
-					translateMenu
+					if isTranslating {
+						ProgressView()
+							.controlSize(.small)
+							.accessibilityLabel("Translating")
+					}
+					else {
+						translateMenu
+					}
 				}
 			}
+			.overlay(alignment: .top) {
+				if isTranslating {
+					translationStatus
+						.padding(.top, 12)
+						.transition(.move(edge: .top).combined(with: .opacity))
+				}
+			}
+			.animation(.default, value: isTranslating)
 			.translationTask(translationConfiguration) { session in
 				await translatePage(using: session)
 			}
@@ -94,6 +109,26 @@ struct COREHelpPageView: View {
 			Label("Translate", systemImage: "translate")
 		}
 		.disabled(isTranslating || viewer.webPage.url == nil || translationLanguages.isEmpty)
+	}
+
+	/// A floating status shown over the page while a translation is in progress.
+	private var translationStatus: some View {
+		HStack(spacing: 8) {
+			ProgressView()
+				.controlSize(.small)
+
+			if let target = translationConfiguration?.target {
+				Text("Translating to \(displayName(for: target))…")
+			}
+			else {
+				Text("Translating…")
+			}
+		}
+		.font(.callout)
+		.padding(.horizontal, 16)
+		.padding(.vertical, 10)
+		.glassEffect(.regular, in: .capsule)
+		.accessibilityElement(children: .combine)
 	}
 
 	private func translate(to language:Locale.Language) {
