@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  COREHelpSearchSpotlightHandler.swift
 //  
 //
 //  Created by Steven Troughton-Smith on 06/01/2023.
@@ -8,35 +8,35 @@
 import Foundation
 
 /**
+ Registers the help bundle with the macOS Help menu search field (`NSUserInterfaceItemSearching`).
 
 ~~~
- 
- /*  Sample registration & invocation from client app: */
- func setupHelp() {
-	 #if targetEnvironment(macCatalyst)
-	 
-	 let helpBundle = HelpBundle(url:Bundle.main.url(forResource: "Help", withExtension: "help")!)
-	let handler = COREHelpSearchSpotlightHandler(helpBundle:helpBundle)
-	 
-	/* When a help item is triggered, launch the help window scene and navigate to corresponding page */
-	handler.actionHandler = { [weak self] page in
-		 let activity = NSUserActivity(activityType: "com.highcaffeinecontent.broadcasts.help")
-		 UIApplication.shared.requestSceneSessionActivation(self?.helpSession, userActivity: activity, options: nil)
-		 
-		 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-			 guard let helpScene = self?.helpSession?.scene?.delegate as? COREHelpWindowSceneDelegate else { return }
-			 helpScene.helpRootController.navigate(to: page)
-		 }
+ /*  Sample registration & invocation from a SwiftUI client app: */
+ struct ContentView: View {
+	 @Environment(\.openWindow) private var openWindow
+	 @State private var helpSearchHandler: COREHelpSearchSpotlightHandler?
+
+	 var body: some View {
+		 MainView()
+			 .onAppear {
+				 #if os(macOS) || targetEnvironment(macCatalyst)
+				 let handler = COREHelpSearchSpotlightHandler(helpBundle: .main()!)
+
+				 /* When a help item is triggered, open the help window on the corresponding page */
+				 handler.actionHandler = { page in
+					 openWindow(id: COREHelpWindow.defaultID, value: page.url)
+				 }
+
+				 handler.registerWithSystem()
+				 helpSearchHandler = handler
+				 #endif
+			 }
 	 }
-	 
-	 handler.registerWithSystem()
-	 
-	 self.helpSearchHandler = handler
-	 #endif
  }
  ~~~
- 
+
  */
+@MainActor
 open class COREHelpSearchSpotlightHandler: NSObject {
 
 	var helpBundle:HelpBundle!

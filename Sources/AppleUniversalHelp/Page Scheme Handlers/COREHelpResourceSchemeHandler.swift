@@ -1,59 +1,81 @@
 //
 //  COREHelpResourceSchemeHandler.swift
-//  
+//
 //
 //  Created by Steven Troughton-Smith on 03/01/2023.
 //
 
+import Foundation
 import WebKit
+import UniformTypeIdentifiers
 
-class COREHelpResourceSchemeHandler: NSObject, WKURLSchemeHandler {
-	var baseURL:URL? = nil
-	
-	func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
-		
-		if urlSchemeTask.request.url?.host == "appicon" {
-			let iconName = Bundle.main.infoDictionary?["CFBundleIconFile"] as? String
-			
-			let icon = UIImage(named: iconName ?? "")
-			guard let data = icon?.pngData() else { return }
-			urlSchemeTask.didReceive(URLResponse(url: urlSchemeTask.request.url!, mimeType: "image/png", expectedContentLength: data.count, textEncodingName: nil))
-			
-			urlSchemeTask.didReceive(data)
-			urlSchemeTask.didFinish()
+enum COREHelpError: Error {
+	case taskFailedSuccessfully
+}
+
+/// Serves files from the help bundle (`helpbundle://`), the app's `styles.css` (`inbuilt://`),
+/// and the app icon (`helpbundle://appicon` / `inbuilt://appicon`).
+struct COREHelpResourceSchemeHandler: URLSchemeHandler {
+	let baseURL:URL?
+
+	func reply(for request: URLRequest) -> AsyncThrowingStream<URLSchemeTaskResult, any Error> {
+		guard let requestURL = request.url else {
+			return .failure(URLError(.badURL))
 		}
-		else if urlSchemeTask.request.url?.scheme == "helpbundle" {
-			if let nsPath = urlSchemeTask.request.url?.absoluteString as? NSString {
-			
-				if let url = baseURL?.appendingPathComponent(nsPath.replacingOccurrences(of: "helpbundle://", with: "")) {
-					
-					do {
-						let data = try Data(contentsOf: url)
-						urlSchemeTask.didReceive(URLResponse(url: url, mimeType: nil, expectedContentLength: data.count, textEncodingName: nil))
-						urlSchemeTask.didReceive(data)
-						urlSchemeTask.didFinish()
-					}
-					catch {
-						
-					}
-				}
+
+		if requestURL.host == "appicon" {
+			// Image rendering must happen on the main actor
+			return .rendering(url: requestURL) {
+				COREHelpImageRenderer.appIconPNGData()
 			}
+		}
+
+		let fileURL:URL?
+		if requestURL.scheme == "helpbundle" {
+			fileURL = baseURL?.appendingPathComponent(requestURL.absoluteString.replacingOccurrences(of: "helpbundle://", with: ""))
 		}
 		else {
-			let url = Bundle.main.url(forResource: "styles", withExtension: "css")!
-			do {
-				let data = try Data(contentsOf: url)
-				urlSchemeTask.didReceive(URLResponse(url: url, mimeType: "text/html", expectedContentLength: data.count, textEncodingName: nil))
-				urlSchemeTask.didReceive(data)
-				urlSchemeTask.didFinish()
-			}
-			catch {
-				
-			}
+			fileURL = Bundle.main.url(forResource: "styles", withExtension: "css")
+		}
+
+		guard let fileURL = fileURL, let data = try? Data(contentsOf: fileURL) else {
+			return .failure(URLError(.fileDoesNotExist))
+		}
+
+		let mimeType = UTType(filenameExtension: fileURL.pathExtension)?.preferredMIMEType
+		return .reply(url: requestURL, mimeType: mimeType, data: data)
+	}
+}
+
+// MARK: - Helpers
+
+extension AsyncThrowingStream where Element == URLSchemeTaskResult, Failure == any Error {
+
+	static func failure(_ error:any Error) -> Self {
+		AsyncThrowingStream { $0.finish(throwing: error) }
+	}
+
+	static func reply(url:URL, mimeType:String?, data:Data) -> Self {
+		AsyncThrowingStream { continuation in
+			continuation.yield(.response(URLResponse(url: url, mimeType: mimeType, expectedContentLength: data.count, textEncodingName: nil)))
+			continuation.yield(.data(data))
+			continuation.finish()
 		}
 	}
-	
-	func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {
-		
+
+	/// Produces PNG data on the main actor (where `ImageRenderer` lives) and replies with it.
+	static func rendering(url:URL, _ render: @escaping @MainActor @Sendable () -> Data?) -> Self {
+		AsyncThrowingStream { continuation in
+			let task = Task { @MainActor in
+				guard let data = render() else {
+					continuation.finish(throwing: URLError(.cannotDecodeContentData))
+					return
+				}
+				continuation.yield(.response(URLResponse(url: url, mimeType: "image/png", expectedContentLength: data.count, textEncodingName: nil)))
+				continuation.yield(.data(data))
+				continuation.finish()
+			}
+			continuation.onTermination = { _ in task.cancel() }
+		}
 	}
 }
