@@ -51,6 +51,5 @@ struct COREHelpWindowContent: View {
 
 	var body: some View {
 		COREHelpView(viewer: viewer)
-			.tint(.purple)
 	}
 }

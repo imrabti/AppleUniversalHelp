@@ -50,10 +50,42 @@ public final class COREHelpViewer {
 				coordinator.viewer?.toggleTableOfContents()
 			}
 		]
+		configuration.userContentController.addUserScript(Self.darkModeScript)
 
 		webPage = WebPage(configuration: configuration, navigationDecider: NavigationDecider(coordinator: coordinator))
 
 		coordinator.viewer = self
+	}
+
+	// MARK: - Appearance
+
+	/// Help pages and `styles.css` are usually written for a light appearance only. This stylesheet opts every page
+	/// into dark mode and, when the system is dark, overrides hard-coded text colors so the content stays readable.
+	private static let darkModeStylesheet = """
+	:root { color-scheme: light dark; }
+	@media (prefers-color-scheme: dark) {
+		html, body { background-color: Canvas !important; color: CanvasText !important; }
+		p, li, dt, dd, td, th, h1, h2, h3, h4, h5, h6, span, div, blockquote, figcaption, label, strong, em, b, i {
+			color: inherit !important;
+		}
+		a, a * { color: LinkText !important; }
+		table, td, th, hr { border-color: rgba(255, 255, 255, 0.2) !important; }
+	}
+	"""
+
+	/// Injects ``darkModeStylesheet`` before the page renders, so there's no flash of light content.
+	private static var darkModeScript:WKUserScript {
+		let css = darkModeStylesheet
+			.replacingOccurrences(of: "\\", with: "\\\\")
+			.replacingOccurrences(of: "`", with: "\\`")
+		let source = """
+		(() => {
+			const style = document.createElement('style');
+			style.textContent = `\(css)`;
+			document.documentElement.appendChild(style);
+		})();
+		"""
+		return WKUserScript(source: source, injectionTime: .atDocumentStart, forMainFrameOnly: true)
 	}
 
 	// MARK: - Navigation
